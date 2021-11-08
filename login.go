@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/beego/beego/v2/client/httplib"
 	"github.com/cdle/sillyGirl/core"
 	"github.com/gorilla/websocket"
 )
