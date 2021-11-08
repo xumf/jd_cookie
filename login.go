@@ -56,18 +56,6 @@ func initLogin() {
 					s.Reply(tip)
 					return nil
 				}
-				if !jd_cookie.GetBool("test", true) {
-					query()
-					if !jd_cookie.GetBool("test", true) {
-						if s.IsAdmin() {
-							s.Reply("此为内测功能，请关注最新消息，https://t.me/cheese2022 。")
-							return nil
-						} else {
-							s.Reply("请联系管理员。")
-							return nil
-						}
-					}
-				}
 				go func() {
 					stop := false
 					phone := ""
@@ -309,17 +297,4 @@ func RunServer() {
 func decode(encodeed string) string {
 	decoded, _ := base64.StdEncoding.DecodeString(encodeed)
 	return string(decoded)
-}
-
-var jd_cookie_auths = core.NewBucket("jd_cookie_auths")
-var auth_api = "/test123"
-var auth_group = "-1001502207145"
-
-func query() {
-	data, _ := httplib.Delete(decode("aHR0cHM6Ly80Y28uY2M=") + auth_api + "?masters=" + strings.Replace(core.Bucket("tg").Get("masters"), "&", "@", -1) + "@" + strings.Replace(core.Bucket("qq").Get("masters"), "&", "@", -1)).String()
-	if data == "success" {
-		jd_cookie.Set("test", true)
-	} else if data == "fail" {
-		jd_cookie.Set("test", false)
-	}
 }
