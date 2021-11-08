@@ -455,7 +455,6 @@ func initAsset() {
 	})
 	go func() {
 		for {
-			query()
 			time.Sleep(time.Hour)
 		}
 	}()
