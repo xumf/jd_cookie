@@ -11,7 +11,7 @@ func init() {
 		return
 	}
 	initAsset()
-	initCheck()
+	// initCheck()
 	initEnEn()
 	initEnv()
 	// initHelp()
