@@ -148,7 +148,7 @@ func initLogin() {
 								}
 							}
 							msg = strings.Join(new, "\n")
-							if strings.Contains(msg, "直接退出") {
+							if strings.Contains(msg, "数字编号") {
 								sendMsg("1")
 								continue
 							}
