@@ -157,6 +157,10 @@ func initLogin() {
 								sendMsg("1")
 								continue
 							}
+							if strings.Contains(msg, "无法发送验证码") {
+								sendMsg("获取验证码失败，请重新输入手机号码");
+								continue
+							}
 							if phone != "" && (strings.Contains(msg, "请输入手机号") || strings.Contains(msg, "请输入11位手机号")) {
 								sendMsg(phone)
 								continue
