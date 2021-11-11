@@ -134,6 +134,14 @@ func initLogin() {
 							if strings.Contains(msg, "无法回复") {
 								sendMsg("帮助")
 							}
+							if strings.Contains(msg, "无法发送验证码") {
+								s.Reply("获取验证码失败，请重新输入手机号码")
+								continue
+							}
+							if strings.Contains(msg, "手机号格式有误") {
+								s.Reply("手机号格式有误，请重新输入手机号码")
+								continue
+							}
 							{
 								res := regexp.MustCompile(`剩余操作时间：(\d+)`).FindStringSubmatch(msg)
 								if len(res) > 0 {
@@ -155,14 +163,6 @@ func initLogin() {
 							}
 							if strings.Contains(msg, "登录方式") {
 								sendMsg("1")
-								continue
-							}
-							if strings.Contains(msg, "无法发送验证码") {
-								sendMsg("获取验证码失败，请重新输入手机号码")
-								continue
-							}
-							if strings.Contains(msg, "手机号格式有误") {
-								sendMsg("手机号格式有误，请重新输入手机号码")
 								continue
 							}
 							if phone != "" && (strings.Contains(msg, "请输入手机号") || strings.Contains(msg, "请输入11位手机号")) {
