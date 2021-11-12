@@ -570,11 +570,11 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 		var mmc = make(chan int64)
 		var zjb = make(chan int64)
 		go redPacket(cookie, rpc)
-		go initFarm(cookie, fruit)
-		go initPetTown(cookie, pet)
+		go initFarm(cookie, fruit, imType)
+		go initPetTown(cookie, pet, imType)
 		go jsGold(cookie, gold)
 		go jxncEgg(cookie, egg)
-		go tytCoupon(cookie, tyt)
+		go tytCoupon(cookie, tyt, imType)
 		go mmCoin(cookie, mmc)
 		go jdzz(cookie, zjb)
 		today := time.Now().Local().Format("2006-01-02")
@@ -815,7 +815,7 @@ func redPacket(cookie string, rpc chan []RedList) {
 	rpc <- a.Data.UseRedInfo.RedList
 }
 
-func initFarm(cookie string, state chan string) {
+func initFarm(cookie string, state chan string, imType string) {
 	type RightUpResouces struct {
 		AdvertID string `json:"advertId"`
 		Name     string `json:"name"`
@@ -969,22 +969,29 @@ func initFarm(cookie string, state chan string) {
 	data, _ := req.Bytes()
 	json.Unmarshal(data, &a)
 
+	clockEmoji := "⏰"
+    cherryEmoji := "🍒"
+    if "" != imType && "wx" == imType {
+        clockEmoji = "[emoji=\\u23f0]"
+        cherryEmoji = "[emoji=\\ud83c\\udf52\\u00a]"
+    }
+
 	rt := a.FarmUserPro.Name
 	if rt == "" {
 		rt = "数据异常"
 	} else {
 		if a.TreeState == 2 || a.TreeState == 3 {
-			rt += "已可领取⏰"
+			rt += fmt.Sprintf("已可领取%s", clockEmoji)
 		} else if a.TreeState == 1 {
-			rt += fmt.Sprintf("种植中，进度%.2f%%🍒", 100*float64(a.FarmUserPro.TreeEnergy)/float64(a.FarmUserPro.TreeTotalEnergy))
+			rt += fmt.Sprintf("种植中，进度%.2f%%%s", 100*float64(a.FarmUserPro.TreeEnergy)/float64(a.FarmUserPro.TreeTotalEnergy), cherryEmoji)
 		} else if a.TreeState == 0 {
-			rt = "您忘了种植新的水果⏰"
+			rt = mt.Sprintf("您忘了种植新的水果%s", clockEmoji)
 		}
 	}
 	state <- rt
 }
 
-func initPetTown(cookie string, state chan string) {
+func initPetTown(cookie string, state chan string, imType string) {
 	type ResourceList struct {
 		AdvertID string `json:"advertId"`
 		ImageURL string `json:"imageUrl"`
@@ -1064,17 +1071,25 @@ func initPetTown(cookie string, state chan string) {
 	data, _ := req.Bytes()
 	json.Unmarshal(data, &a)
 	rt := ""
+
+	clockEmoji := "⏰"
+    dogEmoji := "🐶"
+    if "" != imType && "wx" == imType {
+        clockEmoji = "[emoji=\\u23f0]"
+        dogEmoji = "[emoji=\\ud83d\\udc36]"
+    }
+
 	if a.Code == "0" && a.ResultCode == "0" && a.Message == "success" {
 		if a.Result.UserStatus == 0 {
-			rt = "请手动开启活动⏰"
+			rt = fmt.Sprintf("请手动开启活动%s", clockEmoji)
 		} else if a.Result.GoodsInfo.GoodsName == "" {
-			rt = "你忘了选购新的商品⏰"
+			rt = fmt.Sprintf("你忘了选购新的商品%s", clockEmoji)
 		} else if a.Result.PetStatus == 5 {
-			rt = a.Result.GoodsInfo.GoodsName + "已可领取⏰"
+			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName + "已可领取%s", clockEmoji)
 		} else if a.Result.PetStatus == 6 {
-			rt = a.Result.GoodsInfo.GoodsName + "未继续领养新的物品⏰"
+			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName + "未继续领养新的物品%s", clockEmoji)
 		} else {
-			rt = a.Result.GoodsInfo.GoodsName + fmt.Sprintf("领养中，进度%.2f%%，勋章%d/%d🐶", a.Result.MedalPercent, a.Result.MedalNum, a.Result.GoodsInfo.ExchangeMedalNum)
+			rt = a.Result.GoodsInfo.GoodsName + fmt.Sprintf("领养中，进度%.2f%%，勋章%d/%d%s", a.Result.MedalPercent, a.Result.MedalNum, a.Result.GoodsInfo.ExchangeMedalNum, dogEmoji)
 		}
 	} else {
 		rt = "数据异常"
@@ -1147,7 +1162,7 @@ func jxncEgg(cookie string, state chan int64) {
 	state <- egg
 }
 
-func tytCoupon(cookie string, state chan string) {
+func tytCoupon(cookie string, state chan string, imType string) {
 
 	type DiscountInfo struct {
 		High string        `json:"high"`
@@ -1240,6 +1255,14 @@ func tytCoupon(cookie string, state chan string) {
 	data, _ := req.Bytes()
 	res := regexp.MustCompile(`jsonpCBKB[(](.*)\s+[)];}catch`).FindSubmatch(data)
 	rt := ""
+
+	clockEmoji := "⏰"
+    lotteryEmoji := "🎰"
+    if "" != imType && "wx" == imType {
+        clockEmoji = "[emoji=\\u23f0]"
+        lotteryEmoji = "[emoji=\\ud83c\\udfb0]"
+    }
+
 	if len(res) > 0 {
 		json.Unmarshal(res[1], &a)
 		num := 0
@@ -1258,9 +1281,9 @@ func tytCoupon(cookie string, state chan string) {
 		} else {
 			rt = fmt.Sprintf("%d张5元优惠券", num)
 			if toexp > 0 {
-				rt += fmt.Sprintf("(今天将过期%d张)⏰", toexp)
+				rt += fmt.Sprintf("(今天将过期%d张)%s", toexp, clockEmoji)
 			} else {
-				rt += "🎰"
+				rt += lotteryEmoji;
 			}
 		}
 	}
