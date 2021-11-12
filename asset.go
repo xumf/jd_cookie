@@ -985,7 +985,7 @@ func initFarm(cookie string, state chan string, imType string) {
 		} else if a.TreeState == 1 {
 			rt += fmt.Sprintf("种植中，进度%.2f%%%s", 100*float64(a.FarmUserPro.TreeEnergy)/float64(a.FarmUserPro.TreeTotalEnergy), cherryEmoji)
 		} else if a.TreeState == 0 {
-			rt = mt.Sprintf("您忘了种植新的水果%s", clockEmoji)
+			rt = fmt.Sprintf("您忘了种植新的水果%s", clockEmoji)
 		}
 	}
 	state <- rt
