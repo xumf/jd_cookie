@@ -116,7 +116,7 @@ var ua = func() string {
 
 var assets sync.Map
 var queryAssetLocker sync.Mutex
-var GetAsset = func(ck *JdCookie) string {
+var GetAsset = func(ck *JdCookie, imType string) string {
 	if asset, ok := assets.Load(ck.PtPin); ok {
 		return asset.(string)
 	}
@@ -125,7 +125,7 @@ var GetAsset = func(ck *JdCookie) string {
 	var asset = (&JdCookie{
 		PtKey: ck.PtKey,
 		PtPin: ck.PtPin,
-	}).QueryAsset()
+	}).QueryAsset(imType)
 	assets.Store(ck.PtPin, asset)
 	return asset
 }
@@ -142,7 +142,7 @@ func initAsset() {
 		}
 	}()
 	get := func(c chan string, ck JdCookie) {
-		c <- GetAsset(&ck)
+		c <- GetAsset(&ck, "")
 		return
 	}
 	//待做：增加惊喜工厂
@@ -195,7 +195,7 @@ func initAsset() {
 					s.Reply(strings.Join(rt, "\n\n"))
 				} else {
 					for _, ck := range cks {
-						s.Reply(GetAsset(&ck))
+						s.Reply(GetAsset(&ck, s.GetImType()))
 					}
 				}
 				return nil
@@ -205,7 +205,7 @@ func initAsset() {
 			Rules: []string{`raw ^资产推送$`},
 			Cron:  jd_cookie.Get("asset_push"),
 			Admin: true,
-			Handle: func(_ core.Sender) interface{} {
+			Handle: func(s core.Sender) interface{} {
 				envs, _ := qinglong.GetEnvs("JD_COOKIE")
 				for _, env := range envs {
 					pt_pin := core.FetchCookieValue(env.Value, "pt_pin")
@@ -220,7 +220,7 @@ func initAsset() {
 									push(string(v), GetAsset(&JdCookie{
 										PtPin: pt_pin,
 										PtKey: pt_key,
-									}))
+									}, s.GetImType()))
 								}
 							}
 							return nil
@@ -300,7 +300,7 @@ func initAsset() {
 					s.Reply(strings.Join(rt, "\n\n"))
 				} else {
 					for _, ck := range cks {
-						s.Reply(GetAsset(&ck))
+						s.Reply(GetAsset(&ck, s.GetImType()))
 					}
 				}
 				return nil
@@ -541,7 +541,17 @@ var Float64 = func(s string) float64 {
 	return i
 }
 
-func (ck *JdCookie) QueryAsset() string {
+func (ck *JdCookie) QueryAsset(imType string) string {
+    
+    redPacketEmoji := "🧧"
+    eggEmoji := "🥚"
+    moneyEmoji := "💰"
+    if "" != imType && "wx" == imType {
+        redPacketEmoji = "[emoji=\\uD83E\\uDDE7]"
+        eggEmoji = "[emoji=\\ud83e\\udd5a]"
+        moneyEmoji = "[emoji=\\ud83d\\udcb0]"
+    }
+    
 	msgs := []string{}
 	if ck.Note != "" {
 		msgs = append(msgs, fmt.Sprintf("账号备注：%s", ck.Note))
@@ -662,18 +672,19 @@ func (ck *JdCookie) QueryAsset() string {
 				return ""
 			}
 			if asset.RedPacket.Total != 0 {
-				msgs = append(msgs, fmt.Sprintf("所有红包：%.2f%s元🧧", asset.RedPacket.Total, e(asset.RedPacket.ToExpire)))
+			    
+				msgs = append(msgs, fmt.Sprintf("所有红包：%.2f%s元%s", asset.RedPacket.Total, e(asset.RedPacket.ToExpire), redPacketEmoji))
 				if asset.RedPacket.Jx != 0 {
-					msgs = append(msgs, fmt.Sprintf("京喜红包：%.2f%s元", asset.RedPacket.Jx, e(asset.RedPacket.ToExpireJx)))
+					msgs = append(msgs, fmt.Sprintf("京喜红包：%.2f%s元%s", asset.RedPacket.Jx, e(asset.RedPacket.ToExpireJx), redPacketEmoji))
 				}
 				if asset.RedPacket.Js != 0 {
-					msgs = append(msgs, fmt.Sprintf("极速红包：%.2f%s元", asset.RedPacket.Js, e(asset.RedPacket.ToExpireJs)))
+					msgs = append(msgs, fmt.Sprintf("极速红包：%.2f%s元%s", asset.RedPacket.Js, e(asset.RedPacket.ToExpireJs), redPacketEmoji))
 				}
 				if asset.RedPacket.Jd != 0 {
-					msgs = append(msgs, fmt.Sprintf("京东红包：%.2f%s元", asset.RedPacket.Jd, e(asset.RedPacket.ToExpireJd)))
+					msgs = append(msgs, fmt.Sprintf("京东红包：%.2f%s元%s", asset.RedPacket.Jd, e(asset.RedPacket.ToExpireJd), redPacketEmoji))
 				}
 				if asset.RedPacket.Jk != 0 {
-					msgs = append(msgs, fmt.Sprintf("健康红包：%.2f%s元", asset.RedPacket.Jk, e(asset.RedPacket.ToExpireJk)))
+					msgs = append(msgs, fmt.Sprintf("健康红包：%.2f%s元%s", asset.RedPacket.Jk, e(asset.RedPacket.ToExpireJk), redPacketEmoji))
 				}
 			}
 
@@ -684,17 +695,17 @@ func (ck *JdCookie) QueryAsset() string {
 		msgs = append(msgs, fmt.Sprintf("东东萌宠：%s", <-pet))
 		gn := <-gold
 		if gn >= 30000 {
-			msgs = append(msgs, fmt.Sprintf("极速金币：%d(≈%.2f元)💰", gn, float64(gn)/10000))
+			msgs = append(msgs, fmt.Sprintf("极速金币：%d(≈%.2f元)%v", gn, float64(gn)/10000, moneyEmoji))
 		}
 		zjbn := <-zjb
 		if zjbn >= 50000 {
-			msgs = append(msgs, fmt.Sprintf("京东赚赚：%d金币(≈%.2f元)💰", zjbn, float64(zjbn)/10000))
+			msgs = append(msgs, fmt.Sprintf("京东赚赚：%d金币(≈%.2f元)%s", zjbn, float64(zjbn)/10000, moneyEmoji))
 		} else {
 			// msgs = append(msgs, fmt.Sprintf("京东赚赚：暂无数据"))
 		}
 		mmcCoin := <-mmc
 		if mmcCoin >= 3000 {
-			msgs = append(msgs, fmt.Sprintf("京东秒杀：%d秒秒币(≈%.2f元)💰", mmcCoin, float64(mmcCoin)/1000))
+			msgs = append(msgs, fmt.Sprintf("京东秒杀：%d秒秒币(≈%.2f元)%s", mmcCoin, float64(mmcCoin)/1000, moneyEmoji))
 		} else {
 			// msgs = append(msgs, fmt.Sprintf("京东秒杀：暂无数据"))
 		}
@@ -702,7 +713,7 @@ func (ck *JdCookie) QueryAsset() string {
 			msgs = append(msgs, fmt.Sprintf("推一推券：%s", tyt))
 		}
 		if egg := <-egg; egg != 0 {
-			msgs = append(msgs, fmt.Sprintf("惊喜牧场：%d枚鸡蛋🥚", egg))
+			msgs = append(msgs, fmt.Sprintf("惊喜牧场：%d枚鸡蛋%s", egg, eggEmoji))
 		}
 		// if ck.Note != "" {
 		// 	msgs = append([]string{
