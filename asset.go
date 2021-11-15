@@ -220,7 +220,7 @@ func initAsset() {
 									push(string(v), GetAsset(&JdCookie{
 										PtPin: pt_pin,
 										PtKey: pt_key,
-									}, s.GetImType()))
+									}, tp))
 								}
 							}
 							return nil
