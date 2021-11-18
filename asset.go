@@ -220,7 +220,7 @@ func initAsset() {
 									push(string(v), GetAsset(&JdCookie{
 										PtPin: pt_pin,
 										PtKey: pt_key,
-									}, tp))
+									}, tp), nil)
 								}
 							}
 							return nil
@@ -542,16 +542,16 @@ var Float64 = func(s string) float64 {
 }
 
 func (ck *JdCookie) QueryAsset(imType string) string {
-    
-    redPacketEmoji := "🧧"
-    eggEmoji := "🥚"
-    moneyEmoji := "💰"
-    if "" != imType && "wx" == imType {
-        redPacketEmoji = "[emoji=\\uD83E\\uDDE7]"
-        eggEmoji = "[emoji=\\ud83e\\udd5a]"
-        moneyEmoji = "[emoji=\\ud83d\\udcb0]"
-    }
-    
+
+	redPacketEmoji := "🧧"
+	eggEmoji := "🥚"
+	moneyEmoji := "💰"
+	if "" != imType && "wx" == imType {
+		redPacketEmoji = "[emoji=\\uD83E\\uDDE7]"
+		eggEmoji = "[emoji=\\ud83e\\udd5a]"
+		moneyEmoji = "[emoji=\\ud83d\\udcb0]"
+	}
+
 	msgs := []string{}
 	if ck.Note != "" {
 		msgs = append(msgs, fmt.Sprintf("账号备注：%s", ck.Note))
@@ -672,7 +672,7 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 				return ""
 			}
 			if asset.RedPacket.Total != 0 {
-			    
+
 				msgs = append(msgs, fmt.Sprintf("所有红包：%.2f%s元%s", asset.RedPacket.Total, e(asset.RedPacket.ToExpire), redPacketEmoji))
 				if asset.RedPacket.Jx != 0 {
 					msgs = append(msgs, fmt.Sprintf("京喜红包：%.2f%s元%s", asset.RedPacket.Jx, e(asset.RedPacket.ToExpireJx), redPacketEmoji))
@@ -970,11 +970,11 @@ func initFarm(cookie string, state chan string, imType string) {
 	json.Unmarshal(data, &a)
 
 	clockEmoji := "⏰"
-    cherryEmoji := "🍒"
-    if "" != imType && "wx" == imType {
-        clockEmoji = "[emoji=\\u23f0]"
-        cherryEmoji = "[emoji=\\ud83c\\udf52\\u00a]"
-    }
+	cherryEmoji := "🍒"
+	if "" != imType && "wx" == imType {
+		clockEmoji = "[emoji=\\u23f0]"
+		cherryEmoji = "[emoji=\\ud83c\\udf52\\u00a]"
+	}
 
 	rt := a.FarmUserPro.Name
 	if rt == "" {
@@ -1073,11 +1073,11 @@ func initPetTown(cookie string, state chan string, imType string) {
 	rt := ""
 
 	clockEmoji := "⏰"
-    dogEmoji := "🐶"
-    if "" != imType && "wx" == imType {
-        clockEmoji = "[emoji=\\u23f0]"
-        dogEmoji = "[emoji=\\ud83d\\udc36]"
-    }
+	dogEmoji := "🐶"
+	if "" != imType && "wx" == imType {
+		clockEmoji = "[emoji=\\u23f0]"
+		dogEmoji = "[emoji=\\ud83d\\udc36]"
+	}
 
 	if a.Code == "0" && a.ResultCode == "0" && a.Message == "success" {
 		if a.Result.UserStatus == 0 {
@@ -1085,9 +1085,9 @@ func initPetTown(cookie string, state chan string, imType string) {
 		} else if a.Result.GoodsInfo.GoodsName == "" {
 			rt = fmt.Sprintf("你忘了选购新的商品%s", clockEmoji)
 		} else if a.Result.PetStatus == 5 {
-			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName + "已可领取%s", clockEmoji)
+			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName+"已可领取%s", clockEmoji)
 		} else if a.Result.PetStatus == 6 {
-			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName + "未继续领养新的物品%s", clockEmoji)
+			rt = fmt.Sprintf(a.Result.GoodsInfo.GoodsName+"未继续领养新的物品%s", clockEmoji)
 		} else {
 			rt = a.Result.GoodsInfo.GoodsName + fmt.Sprintf("领养中，进度%.2f%%，勋章%d/%d%s", a.Result.MedalPercent, a.Result.MedalNum, a.Result.GoodsInfo.ExchangeMedalNum, dogEmoji)
 		}
@@ -1257,11 +1257,11 @@ func tytCoupon(cookie string, state chan string, imType string) {
 	rt := ""
 
 	clockEmoji := "⏰"
-    lotteryEmoji := "🎰"
-    if "" != imType && "wx" == imType {
-        clockEmoji = "[emoji=\\u23f0]"
-        lotteryEmoji = "[emoji=\\ud83c\\udfb0]"
-    }
+	lotteryEmoji := "🎰"
+	if "" != imType && "wx" == imType {
+		clockEmoji = "[emoji=\\u23f0]"
+		lotteryEmoji = "[emoji=\\ud83c\\udfb0]"
+	}
 
 	if len(res) > 0 {
 		json.Unmarshal(res[1], &a)
@@ -1283,7 +1283,7 @@ func tytCoupon(cookie string, state chan string, imType string) {
 			if toexp > 0 {
 				rt += fmt.Sprintf("(今天将过期%d张)%s", toexp, clockEmoji)
 			} else {
-				rt += lotteryEmoji;
+				rt += lotteryEmoji
 			}
 		}
 	}
