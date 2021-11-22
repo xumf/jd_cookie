@@ -1649,7 +1649,7 @@ func GetYestodayBean(ck *JdCookie, state chan int) {
 func translate(str string, isWechat bool) string {
 
 	if !isWechat {
-		return
+		return str
 	}
 
 	tempMsg := str
