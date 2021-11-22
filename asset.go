@@ -15,6 +15,7 @@ import (
 	"github.com/buger/jsonparser"
 	"github.com/cdle/sillyGirl/core"
 	"github.com/cdle/sillyGirl/develop/qinglong"
+	"github.com/gin-gonic/gin"
 )
 
 type JdCookie struct {
@@ -116,7 +117,7 @@ var ua = func() string {
 
 var assets sync.Map
 var queryAssetLocker sync.Mutex
-var GetAsset = func(ck *JdCookie, imType string) string {
+var GetAsset = func(ck *JdCookie) string {
 	if asset, ok := assets.Load(ck.PtPin); ok {
 		return asset.(string)
 	}
@@ -125,7 +126,7 @@ var GetAsset = func(ck *JdCookie, imType string) string {
 	var asset = (&JdCookie{
 		PtKey: ck.PtKey,
 		PtPin: ck.PtPin,
-	}).QueryAsset(imType)
+	}).QueryAsset()
 	assets.Store(ck.PtPin, asset)
 	return asset
 }
@@ -142,7 +143,7 @@ func initAsset() {
 		}
 	}()
 	get := func(c chan string, ck JdCookie) {
-		c <- GetAsset(&ck, "")
+		c <- GetAsset(&ck)
 		return
 	}
 	//待做：增加惊喜工厂
@@ -208,7 +209,7 @@ func initAsset() {
 
 				} else {
 					for _, ck := range cks {
-						s.Reply(GetAsset(&ck, s.GetImType()))
+						s.Reply(GetAsset(&ck))
 					}
 				}
 				return nil
@@ -218,7 +219,7 @@ func initAsset() {
 			Rules: []string{`raw ^资产推送$`},
 			Cron:  jd_cookie.Get("asset_push"),
 			Admin: true,
-			Handle: func(s core.Sender) interface{} {
+			Handle: func(_ core.Sender) interface{} {
 				envs, _ := qinglong.GetEnvs("JD_COOKIE")
 				qqGroup := jd_cookie.GetInt("qqGroup")
 				for _, env := range envs {
@@ -352,7 +353,7 @@ func initAsset() {
 					}
 				} else {
 					for _, ck := range cks {
-						s.Reply(GetAsset(&ck, s.GetImType()))
+						s.Reply(GetAsset(&ck))
 					}
 				}
 				return nil
@@ -504,6 +505,45 @@ func initAsset() {
 			},
 		},
 	})
+	go func() {
+		for {
+			query()
+			time.Sleep(time.Hour)
+		}
+	}()
+	if jd_cookie.GetBool("enable_jd_cookie_auth", false) {
+		core.Server.DELETE(auth_api, func(c *gin.Context) {
+			masters := c.Query("masters")
+			if masters == "" {
+				c.String(200, "fail")
+				return
+			}
+			ok := false
+			jd_cookie_auths.Foreach(func(k, _ []byte) error {
+				if strings.Contains(masters, string(k)) {
+					ok = true
+				}
+				return nil
+			})
+			if ok {
+				c.String(200, "success")
+			} else {
+				c.String(200, "fail")
+			}
+		})
+		core.AddCommand("", []core.Function{
+			{
+				Rules: []string{fmt.Sprintf("^%s$", decode("55Sz6K+35YaF5rWL"))},
+				Handle: func(s core.Sender) interface{} {
+					if fmt.Sprint(s.GetChatID()) != auth_group && fmt.Sprint(s.GetChatID()) != "923993867" {
+						return nil
+					}
+					jd_cookie_auths.Set(s.GetUserID(), auth_group)
+					return fmt.Sprintf("%s", decode("55Sz6K+35oiQ5Yqf"))
+				},
+			},
+		})
+	}
 }
 
 func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
@@ -593,17 +633,7 @@ var Float64 = func(s string) float64 {
 	return i
 }
 
-func (ck *JdCookie) QueryAsset(imType string) string {
-
-	redPacketEmoji := "🧧"
-	eggEmoji := "🥚"
-	moneyEmoji := "💰"
-	if "" != imType && "wx" == imType {
-		redPacketEmoji = "[emoji=\\uD83E\\uDDE7]"
-		eggEmoji = "[emoji=\\ud83e\\udd5a]"
-		moneyEmoji = "[emoji=\\ud83d\\udcb0]"
-	}
-
+func (ck *JdCookie) QueryAsset() string {
 	msgs := []string{}
 	if ck.Note != "" {
 		msgs = append(msgs, fmt.Sprintf("账号备注：%s", ck.Note))
@@ -622,11 +652,11 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 		var mmc = make(chan int64)
 		var zjb = make(chan int64)
 		go redPacket(cookie, rpc)
-		go initFarm(cookie, fruit, imType)
-		go initPetTown(cookie, pet, imType)
+		go initFarm(cookie, fruit)
+		go initPetTown(cookie, pet)
 		go jsGold(cookie, gold)
 		go jxncEgg(cookie, egg)
-		go tytCoupon(cookie, tyt, imType)
+		go tytCoupon(cookie, tyt)
 		go mmCoin(cookie, mmc)
 		go jdzz(cookie, zjb)
 		today := time.Now().Local().Format("2006-01-02")
@@ -724,19 +754,18 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 				return ""
 			}
 			if asset.RedPacket.Total != 0 {
-
-				msgs = append(msgs, fmt.Sprintf("所有红包：%.2f%s元%s", asset.RedPacket.Total, e(asset.RedPacket.ToExpire), redPacketEmoji))
+				msgs = append(msgs, fmt.Sprintf("所有红包：%.2f%s元🧧", asset.RedPacket.Total, e(asset.RedPacket.ToExpire)))
 				if asset.RedPacket.Jx != 0 {
-					msgs = append(msgs, fmt.Sprintf("京喜红包：%.2f%s元%s", asset.RedPacket.Jx, e(asset.RedPacket.ToExpireJx), redPacketEmoji))
+					msgs = append(msgs, fmt.Sprintf("京喜红包：%.2f%s元", asset.RedPacket.Jx, e(asset.RedPacket.ToExpireJx)))
 				}
 				if asset.RedPacket.Js != 0 {
-					msgs = append(msgs, fmt.Sprintf("极速红包：%.2f%s元%s", asset.RedPacket.Js, e(asset.RedPacket.ToExpireJs), redPacketEmoji))
+					msgs = append(msgs, fmt.Sprintf("极速红包：%.2f%s元", asset.RedPacket.Js, e(asset.RedPacket.ToExpireJs)))
 				}
 				if asset.RedPacket.Jd != 0 {
-					msgs = append(msgs, fmt.Sprintf("京东红包：%.2f%s元%s", asset.RedPacket.Jd, e(asset.RedPacket.ToExpireJd), redPacketEmoji))
+					msgs = append(msgs, fmt.Sprintf("京东红包：%.2f%s元", asset.RedPacket.Jd, e(asset.RedPacket.ToExpireJd)))
 				}
 				if asset.RedPacket.Jk != 0 {
-					msgs = append(msgs, fmt.Sprintf("健康红包：%.2f%s元%s", asset.RedPacket.Jk, e(asset.RedPacket.ToExpireJk), redPacketEmoji))
+					msgs = append(msgs, fmt.Sprintf("健康红包：%.2f%s元", asset.RedPacket.Jk, e(asset.RedPacket.ToExpireJk)))
 				}
 			}
 
@@ -747,17 +776,17 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 		msgs = append(msgs, fmt.Sprintf("东东萌宠：%s", <-pet))
 		gn := <-gold
 		if gn >= 30000 {
-			msgs = append(msgs, fmt.Sprintf("极速金币：%d(≈%.2f元)%v", gn, float64(gn)/10000, moneyEmoji))
+			msgs = append(msgs, fmt.Sprintf("极速金币：%d(≈%.2f元)💰", gn, float64(gn)/10000))
 		}
 		zjbn := <-zjb
 		if zjbn >= 50000 {
-			msgs = append(msgs, fmt.Sprintf("京东赚赚：%d金币(≈%.2f元)%s", zjbn, float64(zjbn)/10000, moneyEmoji))
+			msgs = append(msgs, fmt.Sprintf("京东赚赚：%d金币(≈%.2f元)💰", zjbn, float64(zjbn)/10000))
 		} else {
 			// msgs = append(msgs, fmt.Sprintf("京东赚赚：暂无数据"))
 		}
 		mmcCoin := <-mmc
 		if mmcCoin >= 3000 {
-			msgs = append(msgs, fmt.Sprintf("京东秒杀：%d秒秒币(≈%.2f元)%s", mmcCoin, float64(mmcCoin)/1000, moneyEmoji))
+			msgs = append(msgs, fmt.Sprintf("京东秒杀：%d秒秒币(≈%.2f元)💰", mmcCoin, float64(mmcCoin)/1000))
 		} else {
 			// msgs = append(msgs, fmt.Sprintf("京东秒杀：暂无数据"))
 		}
@@ -765,7 +794,7 @@ func (ck *JdCookie) QueryAsset(imType string) string {
 			msgs = append(msgs, fmt.Sprintf("推一推券：%s", tyt))
 		}
 		if egg := <-egg; egg != 0 {
-			msgs = append(msgs, fmt.Sprintf("惊喜牧场：%d枚鸡蛋%s", egg, eggEmoji))
+			msgs = append(msgs, fmt.Sprintf("惊喜牧场：%d枚鸡蛋🥚", egg))
 		}
 		// if ck.Note != "" {
 		// 	msgs = append([]string{
@@ -867,7 +896,7 @@ func redPacket(cookie string, rpc chan []RedList) {
 	rpc <- a.Data.UseRedInfo.RedList
 }
 
-func initFarm(cookie string, state chan string, imType string) {
+func initFarm(cookie string, state chan string) {
 	type RightUpResouces struct {
 		AdvertID string `json:"advertId"`
 		Name     string `json:"name"`
@@ -1021,13 +1050,6 @@ func initFarm(cookie string, state chan string, imType string) {
 	data, _ := req.Bytes()
 	json.Unmarshal(data, &a)
 
-	clockEmoji := "⏰"
-	cherryEmoji := "🍒"
-	if "" != imType && "wx" == imType {
-		clockEmoji = "[emoji=\\u23f0]"
-		cherryEmoji = "[emoji=\\ud83c\\udf52\\u00a]"
-	}
-
 	rt := a.FarmUserPro.Name
 	if rt == "" {
 		rt = "数据异常"
@@ -1036,7 +1058,7 @@ func initFarm(cookie string, state chan string, imType string) {
 			rt += "已可领取⏰"
 			Notify(core.FetchCookieValue("pt_pin", cookie), "东东农场通知：\n"+rt)
 		} else if a.TreeState == 1 {
-			rt += fmt.Sprintf("种植中，进度%.2f%%%s", 100*float64(a.FarmUserPro.TreeEnergy)/float64(a.FarmUserPro.TreeTotalEnergy), cherryEmoji)
+			rt += fmt.Sprintf("种植中，进度%.2f%%🍒", 100*float64(a.FarmUserPro.TreeEnergy)/float64(a.FarmUserPro.TreeTotalEnergy))
 		} else if a.TreeState == 0 {
 			rt = "您忘了种植新的水果⏰"
 			Notify(core.FetchCookieValue("pt_pin", cookie), "东东农场通知：\n"+rt)
@@ -1047,7 +1069,7 @@ func initFarm(cookie string, state chan string, imType string) {
 	}
 }
 
-func initPetTown(cookie string, state chan string, imType string) {
+func initPetTown(cookie string, state chan string) {
 	type ResourceList struct {
 		AdvertID string `json:"advertId"`
 		ImageURL string `json:"imageUrl"`
@@ -1142,7 +1164,7 @@ func initPetTown(cookie string, state chan string, imType string) {
 			rt = a.Result.GoodsInfo.GoodsName + "未继续领养新的物品⏰"
 			Notify(core.FetchCookieValue("pt_pin", cookie), "东东萌宠通知：\n"+rt)
 		} else {
-			rt = a.Result.GoodsInfo.GoodsName + fmt.Sprintf("领养中，进度%.2f%%，勋章%d/%d%s", a.Result.MedalPercent, a.Result.MedalNum, a.Result.GoodsInfo.ExchangeMedalNum, dogEmoji)
+			rt = a.Result.GoodsInfo.GoodsName + fmt.Sprintf("领养中，进度%.2f%%，勋章%d/%d🐶", a.Result.MedalPercent, a.Result.MedalNum, a.Result.GoodsInfo.ExchangeMedalNum)
 		}
 	} else {
 		rt = "数据异常"
@@ -1220,7 +1242,7 @@ func jxncEgg(cookie string, state chan int64) {
 	state <- egg
 }
 
-func tytCoupon(cookie string, state chan string, imType string) {
+func tytCoupon(cookie string, state chan string) {
 
 	type DiscountInfo struct {
 		High string        `json:"high"`
@@ -1313,14 +1335,6 @@ func tytCoupon(cookie string, state chan string, imType string) {
 	data, _ := req.Bytes()
 	res := regexp.MustCompile(`jsonpCBKB[(](.*)\s+[)];}catch`).FindSubmatch(data)
 	rt := ""
-
-	clockEmoji := "⏰"
-	lotteryEmoji := "🎰"
-	if "" != imType && "wx" == imType {
-		clockEmoji = "[emoji=\\u23f0]"
-		lotteryEmoji = "[emoji=\\ud83c\\udfb0]"
-	}
-
 	if len(res) > 0 {
 		json.Unmarshal(res[1], &a)
 		num := 0
@@ -1339,9 +1353,9 @@ func tytCoupon(cookie string, state chan string, imType string) {
 		} else {
 			rt = fmt.Sprintf("%d张5元优惠券", num)
 			if toexp > 0 {
-				rt += fmt.Sprintf("(今天将过期%d张)%s", toexp, clockEmoji)
+				rt += fmt.Sprintf("(今天将过期%d张)⏰", toexp)
 			} else {
-				rt += lotteryEmoji
+				rt += "🎰"
 			}
 		}
 	}
