@@ -235,10 +235,12 @@ func initAsset() {
 							if string(k) == pt_pin && pt_pin != "" {
 								if push, ok := core.Pushs[tp]; ok {
 									fs = append(fs, func() {
-										push(string(v), GetAsset(&JdCookie{
+										tempMsg := GetAsset(&JdCookie{
 											PtPin: pt_pin,
 											PtKey: pt_key,
-										}), qqGroup)
+										})
+										tempMsg = translate(tempMsg)
+										push(string(v), tempMsg, qqGroup)
 									})
 								}
 							}
