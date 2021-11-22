@@ -209,7 +209,7 @@ func initAsset() {
 				} else {
 					for _, ck := range cks {
 						tempMsg := GetAsset(&ck)
-						tempMsg = translate(tempMsg)
+						tempMsg = translate(tempMsg, s.GetImType() == "wx")
 						s.Reply(tempMsg)
 					}
 				}
@@ -241,7 +241,7 @@ func initAsset() {
 											PtPin: pt_pin,
 											PtKey: pt_key,
 										})
-										tempMsg = translate(tempMsg)
+										tempMsg = translate(tempMsg, tp == "wx")
 										push(string(v), tempMsg, qqGroup)
 									})
 								}
@@ -357,7 +357,7 @@ func initAsset() {
 				} else {
 					for _, ck := range cks {
 						tempMsg := GetAsset(&ck)
-						tempMsg = translate(tempMsg)
+						tempMsg = translate(tempMsg, s.GetImType() == "wx")
 						s.Reply(tempMsg)
 					}
 				}
@@ -1646,7 +1646,12 @@ func GetYestodayBean(ck *JdCookie, state chan int) {
 	return
 }
 
-func translate(str string) string {
+func translate(str string, isWechat bool) string {
+
+	if !isWechat {
+		return
+	}
+
 	tempMsg := str
 	tempMsg = strings.Replace(tempMsg, "⭕", "[emoji=\\u2b55]", -1)
 	tempMsg = strings.Replace(tempMsg, "🧧", "[emoji=\\uD83E\\uDDE7]", -1)

@@ -19,7 +19,6 @@ func init() {
 	initCheck()
 	initEnEn()
 	initEnv()
-	// initHelp()
 	initLogin()
 	initSubmit()
 	initTyt()
