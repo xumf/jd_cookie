@@ -252,6 +252,8 @@ func Notify(pt_pin string, content string) {
 	} {
 		core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
 			if string(k) == pt_pin && pt_pin != "" {
+
+				content = translate(content, tp == "wx")
 				if mode != "group" {
 					if push, ok := core.Pushs[tp]; ok {
 						push(string(v), content, qqGroup)
