@@ -139,10 +139,9 @@ func initSubmit() {
 				} {
 					core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
 						pt_pin := string(k)
-						user_id := string(v)
 						if pt_pin == user_pin || user_pin == "all" {
 							if push, ok := core.Pushs[tp]; ok {
-								push(user_id, msg, nil)
+								push(string(v), msg, nil)
 							}
 						}
 						return nil
@@ -201,8 +200,16 @@ func initSubmit() {
 					}
 
 					value := fmt.Sprintf("pt_key=%s;pt_pin=%s;", ck.PtKey, ck.PtPin)
-					if s.GetImType() == "qq" {
-						xdd(value, fmt.Sprint(s.GetUserID()))
+					if jd_cookie.Get("xdd_url") != "" {
+						if s.GetImType() == "qq" {
+							xdd(value, fmt.Sprint(s.GetUserID()))
+						} else {
+							s.Reply("请在30秒内输入QQ号：")
+							s.Await(s, func(s core.Sender) interface{} {
+								xdd(value, s.GetContent())
+								return "OK"
+							}, `^\d+$`, time.Second*30)
+						}
 					}
 					envs, err := qinglong.GetEnvs("JD_COOKIE")
 					if err != nil {
@@ -244,6 +251,7 @@ func initSubmit() {
 							s.Reply(err)
 							continue
 						}
+						assets.Delete(ck.PtPin)
 						rt := ck.Nickname + "，更新成功。"
 						core.NotifyMasters(rt)
 						s.Reply(rt)
