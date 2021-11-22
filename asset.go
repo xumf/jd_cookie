@@ -356,7 +356,9 @@ func initAsset() {
 					}
 				} else {
 					for _, ck := range cks {
-						s.Reply(GetAsset(&ck))
+						tempMsg := GetAsset(&ck)
+						tempMsg = translate(tempMsg)
+						s.Reply(tempMsg)
 					}
 				}
 				return nil
