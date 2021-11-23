@@ -253,10 +253,10 @@ func Notify(pt_pin string, content string) {
 		core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
 			if string(k) == pt_pin && pt_pin != "" {
 
-				translateEmoji(&content, tp == "wx")
 				if strings.Contains(content, "东东农场通知") || strings.Contains(content, "东东萌宠通知") || strings.Contains(content, "京喜工厂通知") {
 					appendActivityPath(&content)
 				}
+				translateEmoji(&content, tp == "wx")
 
 				if mode != "group" {
 					if push, ok := core.Pushs[tp]; ok {
