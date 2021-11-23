@@ -254,7 +254,7 @@ func Notify(pt_pin string, content string) {
 			if string(k) == pt_pin && pt_pin != "" {
 
 				translateEmoji(&content, tp == "wx")
-				if strings.Contains(content, "东东农场通知") || strings.Contains(content, "东东萌宠通知") {
+				if strings.Contains(content, "东东农场通知") || strings.Contains(content, "东东萌宠通知") || strings.Contains(content, "京喜工厂通知") {
 					appendActivityPath(&content)
 				}
 
