@@ -209,7 +209,7 @@ func initAsset() {
 				} else {
 					for _, ck := range cks {
 						tempMsg := GetAsset(&ck)
-						tempMsg = translate(tempMsg, s.GetImType() == "wx")
+						translateEmoji(&tempMsg, s.GetImType() == "wx")
 						s.Reply(tempMsg)
 					}
 				}
@@ -241,7 +241,7 @@ func initAsset() {
 											PtPin: pt_pin,
 											PtKey: pt_key,
 										})
-										tempMsg = translate(tempMsg, tp == "wx")
+										translateEmoji(&tempMsg, tp == "wx")
 										push(string(v), tempMsg, qqGroup)
 									})
 								}
@@ -357,7 +357,7 @@ func initAsset() {
 				} else {
 					for _, ck := range cks {
 						tempMsg := GetAsset(&ck)
-						tempMsg = translate(tempMsg, s.GetImType() == "wx")
+						translateEmoji(&tempMsg, s.GetImType() == "wx")
 						s.Reply(tempMsg)
 					}
 				}
