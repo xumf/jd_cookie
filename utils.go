@@ -36,4 +36,5 @@ func translateEmoji(str *string, isWechat bool) {
 	*str = strings.Replace(*str, "🐶", "[emoji=\\ud83d\\udc36]", -1)
 	*str = strings.Replace(*str, "🎰", "[emoji=\\ud83c\\udfb0]", -1)
 	*str = strings.Replace(*str, "🌂", "[emoji=\\ud83c\\udf02]", -1)
+	*str = strings.Replace(*str, "🏭", "[emoji=\\ud83c\\udfed]", -1)
 }
