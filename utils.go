@@ -37,4 +37,12 @@ func translateEmoji(str *string, isWechat bool) {
 	*str = strings.Replace(*str, "🎰", "[emoji=\\ud83c\\udfb0]", -1)
 	*str = strings.Replace(*str, "🌂", "[emoji=\\ud83c\\udf02]", -1)
 	*str = strings.Replace(*str, "🏭", "[emoji=\\ud83c\\udfed]", -1)
+	*str = strings.replace(*str, "👬", "[emoji=\\ud83d\\udc6c]")
+	*str = strings.replace(*str, "🆔", "[emoji=\\ud83c\\udd94\\u0020]")
+	*str = strings.replace(*str, "🥉", "[emoji=\\ud83e\\udd49]")
+	*str = strings.replace(*str, "📦", "[emoji=\\ud83d\\udce6]")
+	*str = strings.replace(*str, "⭐️", "[emoji=\\u2b50\\ufe0f]")
+	*str = strings.replace(*str, "🎉", "[emoji=\\ud83c\\udf89]")
+	*str = strings.replace(*str, "💧", "[emoji=\\ud83d\\udca7]")
+	*str = strings.replace(*str, "🍉", "[emoji=\\ud83c\\udf49]")
 }
