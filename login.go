@@ -165,7 +165,7 @@ func initLogin() {
 								sendMsg("1")
 								continue
 							}
-							if phone != "" && (strings.Contains(msg, "请输入手机号") || strings.Contains(msg, "请输入11位手机号")) {
+							if phone != "" && (strings.Contains(msg, "请输入手机号（可输入”退出“结束登录）") || strings.Contains(msg, "请输入11位手机号（可输入”退出“结束登录）")) {
 								sendMsg(phone)
 								continue
 							}
@@ -205,7 +205,7 @@ func initLogin() {
 								if cookie == nil {
 									return "取消登录"
 								} else {
-									return "登录成功"
+									return "登录成功，请加我为好友，定时推送资产消息与任务完成消息给你"
 								}
 							}
 							if phone != "" {
