@@ -22,4 +22,5 @@ func init() {
 	initLogin()
 	initSubmit()
 	initTyt()
+	initNotify()
 }
