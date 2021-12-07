@@ -142,9 +142,7 @@ func initLogin() {
 					data, err := req.Body(`{"Phone":"` + phone + `","qlkey":0}`).Bytes()
 					if err != nil {
 						s.Reply(err)
-						if !strings.Contains(err, "验证码输入错误") {
-							return
-						}
+						return
 					}
 					message, _ := jsonparser.GetString(data, "message")
 					success, _ := jsonparser.GetBoolean(data, "success")
