@@ -141,6 +141,9 @@ func initLogin() {
 					req.Header("content-type", "application/json")
 					data, err := req.Body(`{"Phone":"` + phone + `","qlkey":0}`).Bytes()
 					if err != nil {
+						if strings.Contains(err, "验证码输入错误") {
+							return core.GoAgain("请输入正确的手机号：")
+						}
 						s.Reply(err)
 						return
 					}
