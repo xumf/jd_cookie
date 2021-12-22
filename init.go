@@ -23,4 +23,5 @@ func init() {
 	initSubmit()
 	initTyt()
 	initNotify()
+	initHelp()
 }
