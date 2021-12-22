@@ -1,15 +1,10 @@
 package jd_cookie
 
 import (
-	"encoding/base64"
-	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
-	"github.com/beego/beego/v2/client/httplib"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/cdle/sillyGirl/core"
 	"github.com/cdle/sillyGirl/develop/qinglong"
 )
 
