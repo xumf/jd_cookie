@@ -65,7 +65,7 @@ func initCheck() {
 						continue
 					}
 					s.Reply(fmt.Sprintf("%s,JD_COOKIE已失效。", pin), core.E, core.N)
-					Notify(pin, fmt.Sprintf("您的账号(s)已过期，请及时登录。", pin))
+					Notify(pin, fmt.Sprintf("您的账号(%s)已过期，请及时登录。", pin))
 					if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/disable", []byte(`["`+env.ID+`"]`)); err != nil {
 						s.Reply(fmt.Sprintf("%s,JD_COOKIE禁用失败。%v", pin, err), core.E)
 					} else {
@@ -77,7 +77,7 @@ func initCheck() {
 					}
 					pt_key, err := getKey(wse.Value)
 					if err != nil {
-						s.Reply(fmt.Sprintf("%s,JD_WSCK转换失败。%v", pin, err), core.E)
+						s.Reply(fmt.Sprintf("%s,JD_WSCK转换失败。%v", pin, err), core.E, core.N)
 						delete(wscks, pin)
 						continue
 					}
@@ -93,7 +93,7 @@ func initCheck() {
 						delete(wscks, pin)
 						continue
 					}
-					s.Reply(fmt.Sprintf("%s,JD_WSCK转换JD_COOKIE成功。", pin), core.E)
+					s.Reply(fmt.Sprintf("%s,JD_WSCK转换JD_COOKIE成功。", pin), core.E, core.N)
 					if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
 						s.Reply(fmt.Sprintf("%s,JD_COOKIE启用失败。%v", pin, err), core.E)
 					} else {
@@ -111,7 +111,7 @@ func initCheck() {
 				for pin, wse := range wscks {
 					pt_key, err := getKey(wse.Value)
 					if err != nil {
-						s.Reply(fmt.Sprintf("%s,JD_WSCK转换失败。%v", pin, err), core.E)
+						s.Reply(fmt.Sprintf("%s,JD_WSCK转换失败。%v", pin, err), core.E, core.N)
 						continue
 					}
 					if strings.Contains(pt_key, "fake") {
@@ -125,7 +125,7 @@ func initCheck() {
 						}
 						continue
 					}
-					s.Reply(fmt.Sprintf("%s,JD_WSCK转换JD_COOKIE成功。", pin), core.E)
+					s.Reply(fmt.Sprintf("%s,JD_WSCK转换JD_COOKIE成功。", pin), core.E, core.N)
 					value := fmt.Sprintf("pt_key=%s;pt_pin=%s;", pt_key, pin)
 					if env, ok := cks[pin]; ok {
 						env.Value = value
@@ -204,7 +204,7 @@ func getKey(WSCK string) (string, error) {
 	req.Header("User-Agent", ua2)
 	req.Header("content-type", `application/x-www-form-urlencoded; charset=UTF-8`)
 	req.Header("charset", `UTF-8`)
-	req.Header("accept-encoding", `br,gzip,deflate`)
+	// req.Header("accept-encoding", `br,gzip,deflate`)
 	req.Body(`body=%7B%22action%22%3A%22to%22%2C%22to%22%3A%22https%253A%252F%252Fplogin.m.jd.com%252Fcgi-bin%252Fm%252Fthirdapp_auth_page%253Ftoken%253DAAEAIEijIw6wxF2s3bNKF0bmGsI8xfw6hkQT6Ui2QVP7z1Xg%2526client_type%253Dandroid%2526appid%253D879%2526appup_type%253D1%22%7D&`)
 	data, err := req.Bytes()
 	if err != nil {
