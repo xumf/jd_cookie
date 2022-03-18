@@ -183,10 +183,10 @@ func initSubmit() {
 						s.Reply("再捣乱我就报警啦！") //
 						continue
 					}
-					if !ck.Available() {
-						s.Reply("无效的账号。") //有瞎编ck的嫌疑
-						continue
-					}
+					// if !ck.Available() {
+					// 	s.Reply("无效的账号。") //有瞎编ck的嫌疑
+					// 	continue
+					// }
 					if ck.Nickname == "" {
 						s.Reply("请修改昵称！")
 					}
