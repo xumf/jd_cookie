@@ -98,11 +98,7 @@ func initCheck() {
 						continue
 					}
 					s.Reply(fmt.Sprintf("%s,JD_WSCK转换JD_COOKIE成功。", pin), core.E, core.N)
-<<<<<<< HEAD
-					if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
-=======
 					if _, err := qinglong.Req(qls[0], qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
->>>>>>> cherrymars/master
 						s.Reply(fmt.Sprintf("%s,JD_COOKIE启用失败。%v", pin, err), core.E)
 					} else {
 						s.Reply(fmt.Sprintf("%s,JD_COOKIE已启用。", pin), core.E)
